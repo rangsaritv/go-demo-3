@@ -1,22 +1,45 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: api
   namespace: go-demo-3-build
   annotations:
     kubernetes.io/ingress.class: nginx
-    ingress.kubernetes.io/ssl-redirect: "false"
-    ingress.kubernetes.io/rewrite-target: "/demo"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/$2"
 spec:
+  ingressClassName: nginx
   rules:
   - http:
       paths:
       - path: /beta(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
-          serviceName: api
-          servicePort: 8080
+          service:
+            name: api
+            port:
+              number: 8080
+
+#apiVersion: networking.k8s.io/v1 
+#kind: Ingress
+#metadata:
+#  name: api
+#  namespace: go-demo-3-build
+#  annotations:
+#    kubernetes.io/ingress.class: nginx
+#    ingress.kubernetes.io/ssl-redirect: "false"
+#    ingress.kubernetes.io/rewrite-target: "/demo"
+#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+#spec:
+#  rules:
+#  - http:
+#      paths:
+#      - path: /beta(/|$)(.*)
+#        backend:
+#          serviceName: api
+#          servicePort: 8080
 
 ---
 
@@ -29,7 +52,7 @@ metadata:
 ---
 
 kind: Role
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: db
   namespace: go-demo-3-build
@@ -40,7 +63,7 @@ rules:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: db
@@ -109,6 +132,7 @@ spec:
     spec:
       accessModes:
       - ReadWriteOnce
+      storageClassName: rook-ceph-block
       resources:
         requests:
           storage: 2Gi
@@ -146,7 +170,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: vfarcic/go-demo-3:latest
+        image: rangsarit/go-demo-3:latest
         env:
         - name: DB
           value: db
