@@ -13,6 +13,7 @@ metadata:
     ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.controller.ssl-redirect: "false"
 spec:
+  ingressClassName: nginx
   rules:
   - host: {{ .Values.ingress.host }}
     http:
